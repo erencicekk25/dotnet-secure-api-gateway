@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Use-case contracts and policies. Depends only on the domain and lightweight abstractions. -->
+  <ItemGroup>
+    <ProjectReference Include="..\SecureGateway.Domain\SecureGateway.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+</Project>

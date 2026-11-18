@@ -1,0 +1,59 @@
+### Demo requests (VS Code REST Client / JetBrains HTTP Client)
+@gateway = http://localhost:5000
+# For docker-compose use: @gateway = http://localhost:8080
+
+### 1) Issue a development token for a customer
+# @name customerToken
+POST {{gateway}}/auth/dev-token
+Content-Type: application/json
+
+{
+  "subject": "customer-42",
+  "roles": ["Customer"],
+  "scopes": ["accounts:read", "payments:write"]
+}
+
+### 2) List accounts (role + scope + per-user quota)
+GET {{gateway}}/api/accounts
+Authorization: Bearer {{customerToken.response.body.accessToken}}
+X-Correlation-ID: demo-accounts-001
+
+### 3) Create a payment (repeat > 10 times within 60s to observe HTTP 429)
+POST {{gateway}}/api/payments
+Authorization: Bearer {{customerToken.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "fromAccountId": "ACC-00001-TRY",
+  "toIban": "TR00 0000 0000 0000 0000 0000 01",
+  "amount": 1250.50,
+  "currency": "TRY"
+}
+
+### 4) Public endpoint (anonymous, IP-based quota)
+GET {{gateway}}/api/public/fx-rates
+
+### 5) Anonymous call to a protected route -> 401 + security event
+GET {{gateway}}/api/accounts
+
+### 6) Customer calling the audit endpoint -> 403 + security event
+GET {{gateway}}/gateway/security-events
+Authorization: Bearer {{customerToken.response.body.accessToken}}
+
+### 7) Issue an auditor token
+# @name auditorToken
+POST {{gateway}}/auth/dev-token
+Content-Type: application/json
+
+{
+  "subject": "auditor-01",
+  "roles": ["Auditor"],
+  "scopes": ["audit:read"]
+}
+
+### 8) Read the security audit trail
+GET {{gateway}}/gateway/security-events?take=20&type=RateLimitExceeded
+Authorization: Bearer {{auditorToken.response.body.accessToken}}
+
+### 9) Health probes (excluded from rate limiting)
+GET {{gateway}}/health/ready

@@ -1,0 +1,39 @@
+# Infrastructure only, for running the .NET projects directly from the IDE / `dotnet run`.
+# Usage:  docker compose -f docker-compose.dev.yml up -d
+#
+# Ports are bound to 127.0.0.1 only. The credentials below are throw-away LOCAL values that match
+# src/SecureGateway.Gateway/appsettings.Development.json; they are not secrets and must never be
+# reused in any shared or production environment.
+
+name: secure-gateway-dev
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: secure_gateway
+      POSTGRES_USER: gateway
+      POSTGRES_PASSWORD: local_dev_password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gateway -d secure_gateway"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-dev-data: {}

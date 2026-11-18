@@ -1,0 +1,31 @@
+# Build output
+bin/
+obj/
+publish/
+artifacts/
+
+# Test results
+TestResults/
+coverage*/
+*.trx
+
+# IDE
+.vs/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+
+# Secrets & local configuration (never commit)
+.env
+*.local.json
+secrets.json
+*.pfx
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
